@@ -1,15 +1,16 @@
 import argparse
-
-from aiohttp import web
-import aiofiles
-import os
+import asyncio
 import logging
+import os
 import pathlib
+
+import aiofiles
+from aiohttp import web
 
 
 class ArchiveDownloadService:
     def __init__(self, base_directory: str, download_delay: float, logging_enabled: bool):
-        self.base_directory = pathlib.Path(base_directory)
+        self.base_dir = pathlib.Path(base_directory)
         self.download_delay = download_delay
         self.logger = logging.getLogger('archive_service')
         self.logger.level = logging.DEBUG if logging_enabled else logging.NOTSET
@@ -19,19 +20,39 @@ class ArchiveDownloadService:
             index_content = await index_file.read()
         return web.Response(text=index_content, content_type='text/html')
 
-    async def archivate(self, request: web.Request) -> web.Response:
-        pass
-
-
-
-async def archivate(request):
-    raise NotImplementedError
-
-
-async def handle_index_page(request):
-    async with aiofiles.open('index.html', mode='r') as index_file:
-        index_contents = await index_file.read()
-    return web.Response(text=index_contents, content_type='text/html')
+    async def archivate(self, request: web.Request) -> web.StreamResponse:
+        directory_hash = request.match_info['archive_hash']
+        photo_dir = self.base_dir.joinpath(directory_hash)
+        if not photo_dir.exists():
+            raise web.HTTPNotFound(
+                reason=f'Directory `{directory_hash}` does not exist or has been deleted.'
+            )
+        response = web.StreamResponse()
+        response.headers['Content-Disposition'] = f'attachment; filename="{directory_hash}.zip"'
+        response.headers['Content-Type'] = 'application/zip'
+        await response.prepare(request)
+        zip_process = await asyncio.create_subprocess_exec(
+            'zip', '-r', '-', str(photo_dir),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            while True:
+                archive_chunk = await zip_process.stdout.readline()
+                if not archive_chunk:
+                    break
+                self.logger.info('Sending archive chunk...')
+                await response.write(archive_chunk)
+                await asyncio.sleep(self.download_delay)
+        except (asyncio.CancelledError, ConnectionResetError):
+            self.logger.info('Download was interrupted')
+            zip_process.kill()
+            # release exception
+            raise
+        finally:
+            response.force_close()
+            self.logger.info('Download has closed')
+        return response
 
 
 def create_parser():
@@ -62,6 +83,6 @@ if __name__ == '__main__':
     app = web.Application()
     app.add_routes([
         web.get('/', download_service.handle_index_page),
-        web.get('/archive/{archive_hash}/',  download_service.archivate),
+        web.get('/archive/{archive_hash}/', download_service.archivate),
     ])
     web.run_app(app)
