@@ -23,18 +23,54 @@
 ## Как установить
 
 Для работы микросервиса нужен Python версии не ниже 3.6.
+Сервис использует [Poetry](https://poetry.eustace.io/) для управления зависимостями.
 
 ```bash
-pip install -r requirements.txt
+poetry install
 ```
 
 ## Как запустить
 
 ```bash
-python server.py
+$ poetry shell - активация virtualenv
+$ python server.py
+```
+или
+```bash
+poetry run python server.py
 ```
 
+## Параметры сервиса
+
+* -f, --folder, или переменная окружения DVMN_FOLDER - путь к основной директории с фотографиями;
+* -l, --logs или переменная окружения DVMN_LOGS - вести логирование работы;
+* -d, --delay или переменная окружения DVMN_DELAY - число секунд между отдачей клиенту порции архива;
+
 Сервер запустится на порту 8080, чтобы проверить его работу перейдите в браузере на страницу [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
+
+Development with docker
+-----------------------
+
+To start development server inside ``docker`` you will need to run:
+
+.. code:: bash
+
+  docker-compose build
+  docker-compose up
+  
+ Production configuration
+------------------------
+
+You will need to specify extra configuration
+to run ``docker-compose`` in production.
+Since production build also uses ``caddy``,
+which is not required into the development build.
+
+.. code:: bash
+
+  docker-compose -f docker-compose.yml -f docker/docker-compose.prod.yml config > docker-compose.deploy.yml
+
+
 
 ## Как развернуть на сервере
 

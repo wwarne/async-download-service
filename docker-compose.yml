@@ -1,0 +1,15 @@
+# Default compose file for development and production.
+# Should be used directly in development.
+# Automatically loads `docker-compose.override.yml` if it exists.
+# No extra steps required.
+# Should be used together with `docker/docker-compose.prod.yml`
+# in production.
+
+version: "3.6"
+services:
+  download_service:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: python server.py --logs --delay 1
+
