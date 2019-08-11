@@ -72,7 +72,7 @@ def create_parser():
 if __name__ == '__main__':
     parser = create_parser()
     options = parser.parse_args()
-    logging.basicConfig(format='%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s')
+    logging.basicConfig(format='%(filename)s# %(levelname)-8s [%(asctime)s]  %(message)s')
 
     base_directory = options.folder or os.getenv('DVMN_FOLDER', './test_photos/')
     download_delay = options.delay if options.delay is not None else float(os.getenv('DVMN_DELAY', '0'))
