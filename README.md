@@ -32,8 +32,8 @@ poetry install
 ## Как запустить
 
 ```bash
-$ poetry shell - активация virtualenv
-$ python server.py
+poetry shell - активация virtualenv
+python server.py
 ```
 или
 ```bash
@@ -48,34 +48,41 @@ poetry run python server.py
 
 Сервер запустится на порту 8080, чтобы проверить его работу перейдите в браузере на страницу [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
 
-Development with docker
------------------------
 
-To start development server inside ``docker`` you will need to run:
+## Dev-версия  проекта в Docker
 
-.. code:: bash
+#### сборка и запуск
 
-  docker-compose build
-  docker-compose up
+Для запуска dev версии в  ``docker``:
+
+```bash
+docker-compose build
+docker-compose up
+```
+ 
+ Конфигурация хранится в файлах ``docker-compose.yml``
+ Директория с кодом монтируется внутрь контейнера, и после внесения изменений достаточно просто его перезапустить, без пересборки образа.
   
- Production configuration
-------------------------
+#### Указать папку для фотографий в docker
 
-You will need to specify extra configuration
-to run ``docker-compose`` in production.
-Since production build also uses ``caddy``,
-which is not required into the development build.
+Подмонтируейте папку с фотографиями с помощью директивы `volumes` как ``/code/test_photos/``
 
-.. code:: bash
-
-  docker-compose -f docker-compose.yml -f docker/docker-compose.prod.yml config > docker-compose.deploy.yml
-
-
+```yaml
+    volumes:
+          - /home/wedding_photos/ready_photos:/code/test_photos/
+```
 
 ## Как развернуть на сервере
 
 ```bash
 python server.py
+```
+
+или
+
+```bash
+docker-compose build
+docker-compose up -d
 ```
 
 После этого перенаправить на микросервис запросы, начинающиеся с `/arhive/`. Например:
