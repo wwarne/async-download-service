@@ -27,3 +27,5 @@ RUN poetry config settings.virtualenvs.create false \
 COPY . /code
 
 ENTRYPOINT ["/sbin/tini", "--"]
+EXPOSE 8080
+CMD ["python", "server.py"]
