@@ -6,6 +6,6 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - .:/code
-      ports:
-        - "8080:8080"
+    ports:
+      - "8080:8080"
     command: python server.py --logs
