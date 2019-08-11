@@ -34,6 +34,7 @@ class ArchiveDownloadService:
         response.headers['Content-Disposition'] = f'attachment; filename="{directory_hash}.zip"'
         response.headers['Content-Type'] = 'application/zip'
         await response.prepare(request)
+        response.enable_chunked_encoding()
         zip_process = await asyncio.create_subprocess_exec(
             'zip', '-r', '-', str(photo_dir),
             stdout=asyncio.subprocess.PIPE,
