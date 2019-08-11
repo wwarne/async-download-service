@@ -3,6 +3,7 @@ import asyncio
 import logging
 import os
 import pathlib
+import sys
 
 import aiofiles
 from aiohttp import web
@@ -14,6 +15,8 @@ class ArchiveDownloadService:
         self.download_delay = download_delay
         self.logger = logging.getLogger('archive_service')
         self.logger.level = logging.DEBUG if logging_enabled else logging.NOTSET
+        if not self.base_dir.exists():
+            sys.exit(f'Directory {self.base_dir} does not exist!')
 
     async def handle_index_page(self, request: web.Request) -> web.Response:
         async with aiofiles.open('index.html', mode='r') as index_file:
