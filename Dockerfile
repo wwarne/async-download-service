@@ -22,7 +22,7 @@ COPY poetry.lock pyproject.toml /code/
 
 # Project initialization:
 RUN poetry config settings.virtualenvs.create false \
-  && poetry install --no-dev --no-interaction --no-ansi
+  && poetry install --no-interaction --no-ansi
 
 COPY . /code
 
