@@ -54,6 +54,7 @@ class ArchiveDownloadService:
         except (asyncio.CancelledError, ConnectionResetError):
             self.logger.info('Download was interrupted')
             zip_process.kill()
+            await zip_process.communicate()
             # release exception
             raise
         finally:
