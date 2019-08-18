@@ -10,11 +10,10 @@ from aiohttp import web
 
 
 class ArchiveDownloadService:
-    def __init__(self, base_directory: str, download_delay: float, logging_enabled: bool):
+    def __init__(self, base_directory: str, download_delay: float):
         self.base_dir = pathlib.Path(base_directory)
         self.download_delay = download_delay
         self.logger = logging.getLogger('archive_service')
-        self.logger.level = logging.DEBUG if logging_enabled else logging.NOTSET
         if not self.base_dir.exists():
             sys.exit(f'Directory {self.base_dir} does not exist!')
 
@@ -73,16 +72,18 @@ def create_parser():
 if __name__ == '__main__':
     parser = create_parser()
     options = parser.parse_args()
-    logging.basicConfig(format='%(filename)s# %(levelname)-2s [%(asctime)s]  %(message)s')
 
     base_directory = options.folder or os.getenv('DVMN_FOLDER', './test_photos/')
     download_delay = options.delay if options.delay is not None else float(os.getenv('DVMN_DELAY', '0'))
     logging_enabled = options.logs or bool(os.getenv('DVMN_LOGS', False))
 
+    logging.basicConfig(format='%(filename)s# %(levelname)-2s [%(asctime)s]  %(message)s')
+    service_logger = logging.getLogger('archive_service')
+    service_logger.level = logging.DEBUG if logging_enabled else logging.NOTSET
+
     download_service = ArchiveDownloadService(
         base_directory=base_directory,
         download_delay=download_delay,
-        logging_enabled=logging_enabled,
     )
     app = web.Application()
     app.add_routes([
