@@ -9,13 +9,17 @@ import aiofiles
 from aiohttp import web
 
 
+class WrongConfigurationException(Exception):
+    pass
+
+
 class ArchiveDownloadService:
     def __init__(self, base_directory: str, download_delay: float):
         self.base_dir = pathlib.Path(base_directory)
         self.download_delay = download_delay
         self.logger = logging.getLogger('archive_service')
         if not self.base_dir.exists():
-            sys.exit(f'Directory {self.base_dir} does not exist!')
+            raise WrongConfigurationException(f'Directory {self.base_dir} does not exist!')
 
     async def handle_index_page(self, request: web.Request) -> web.Response:
         async with aiofiles.open('index.html', mode='r') as index_file:
@@ -81,10 +85,13 @@ if __name__ == '__main__':
     service_logger = logging.getLogger('archive_service')
     service_logger.level = logging.DEBUG if logging_enabled else logging.NOTSET
 
-    download_service = ArchiveDownloadService(
-        base_directory=base_directory,
-        download_delay=download_delay,
-    )
+    try:
+        download_service = ArchiveDownloadService(
+            base_directory=base_directory,
+            download_delay=download_delay,
+        )
+    except WrongConfigurationException as e:
+        sys.exit(e)
     app = web.Application()
     app.add_routes([
         web.get('/', download_service.handle_index_page),
