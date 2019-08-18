@@ -31,7 +31,7 @@ class ArchiveDownloadService:
         photo_dir = self.base_dir.joinpath(directory_hash)
         if not photo_dir.exists():
             raise web.HTTPNotFound(
-                reason=f'Directory `{directory_hash}` does not exist or has been deleted.'
+                reason=f'Directory `{directory_hash}` does not exist or has been deleted.',
             )
         response = web.StreamResponse()
         response.enable_chunked_encoding()
@@ -55,7 +55,6 @@ class ArchiveDownloadService:
             self.logger.info('Download was interrupted')
             zip_process.kill()
             await zip_process.communicate()
-            # release exception
             raise
         finally:
             response.force_close()
